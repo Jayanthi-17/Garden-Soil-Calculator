@@ -131,8 +131,7 @@
     // Create the calculator HTML structure
     const calculatorHTML = `
       <div class="soil-calculator">
-        <h2>Soil Calculator</h2>
-
+      
         <label>Planter Style</label>
         <div class="radio-group">
           <div class="radio-option">
@@ -279,10 +278,10 @@
           ${volumeCubicFeet.toFixed(2)} cubic feet<br>
           ${volumeCubicMeters.toFixed(2)} cubic meters<br>
           ${volumeLiters.toFixed(2)} liters<br><br>
-          <strong>Recommended Mix (Raised Bed):</strong><br>
-          ${compost} cu yd compost (40%)<br>
-          ${topsoil} cu yd topsoil (40%)<br>
-          ${sand} cu yd sand (20%)<br>
+          <strong>Here's what you need: </strong><br>
+          ${compost} cubic yard compost (40%)<br>
+          ${topsoil} cubic yard topsoil (40%)<br>
+          ${sand} cubic yard sand (20%)<br>
         `);
       } else {
         const d = parseFloat(document.getElementById('diameter').value);
@@ -312,8 +311,8 @@
           ${volumeCubicFeet.toFixed(2)} cubic feet<br>
           ${volumeCubicMeters.toFixed(2)} cubic meters<br>
           ${volumeLiters.toFixed(2)} liters<br><br>
-          <strong>Potting Mix:</strong><br>
-          ~${bagsNeeded} bag(s) of 1.5 cu ft potting mix
+          <strong>Here's what you need:</strong><br>
+          ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
         `);
       }
     }
