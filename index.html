@@ -88,7 +88,7 @@
         padding: 15px;
         border-radius: 4px;
         background-color: #fdf1f0;
-        border-left: 4px solid #ad2a24;
+        border-left: 4px solid #D3D3D3;
       }
 
       .soil-calculator .hidden {
@@ -163,7 +163,7 @@
         padding: 10px;
         background-color: #f5f5f5;
         border-radius: 4px;
-        border-left: 3px solid #ad2a24;
+        border-left: 3px solid #D3D3D3;
       }
       
       .total-result {
@@ -171,7 +171,7 @@
         padding: 15px;
         background-color: #f0f0f0;
         border-radius: 4px;
-        border-left: 4px solid #ad2a24;
+        border-left: 4px solid #D3D3D3;
         font-weight: bold;
       }
       
@@ -268,7 +268,7 @@
           </div>
 
           <label for="depth">Depth (inches)</label>
-          <input type="number" class="depth" value="6" min="1" step="0.5">
+            <input type="number" class="depth" value="6" min="1" step="0.5">
         </div>
       </template>
     `;
@@ -503,33 +503,47 @@
       if (hasErrors) return;
       
       // Prepare result message with consistent units
-      let resultMessage = `
-        <h3>Individual Planter Results</h3>
-        ${individualResults.join('')}
+      let resultMessage = '';
+      
+      // Only show "Individual Planter Results" header if there are multiple planters
+      if (planters.length > 1) {
+        resultMessage += `
+          <h3>Individual Planter Results</h3>
+          ${individualResults.join('')}
+        `;
+      } else {
+        // For single planter, just show the individual result without the header
+        resultMessage += individualResults[0];
+      }
+      
+      // Only show total requirements if there are multiple planters
+      if (planters.length > 1) {
+        resultMessage += `
+          <div class="total-result">
+            <h3>Total Requirements</h3>
+        `;
         
-        <div class="total-result">
-          <h3>Total Requirements</h3>
-      `;
-      
-      if (totalCompost > 0) {
-        // For raised beds - use the selected unit
-        resultMessage += `
-          <strong>Total for Raised Beds:</strong><br>
-          ${totalVolume.toFixed(2)} ${displayUnit} total soil<br>
-          ${totalCompost.toFixed(2)} ${displayUnit} compost (40%)<br>
-          ${totalTopsoil.toFixed(2)} ${displayUnit} topsoil (40%)<br>
-          ${totalSand.toFixed(2)} ${displayUnit} sand (20%)<br><br>
-        `;
+        if (totalCompost > 0) {
+          // For raised beds - use the selected unit
+          resultMessage += `
+            <strong>Total for Raised Beds:</strong><br>
+            ${totalVolume.toFixed(2)} ${displayUnit} total soil<br>
+            ${totalCompost.toFixed(2)} ${displayUnit} compost (40%)<br>
+            ${totalTopsoil.toFixed(2)} ${displayUnit} topsoil (40%)<br>
+            ${totalSand.toFixed(2)} ${displayUnit} sand (20%)<br><br>
+          `;
+        }
+        
+        if (totalBags > 0) {
+          resultMessage += `
+            <strong>Total for Pots:</strong><br>
+            ~${totalBags} bag(s) of 1.5 cubic feet potting mix
+          `;
+        }
+        
+        resultMessage += `</div>`;
       }
       
-      if (totalBags > 0) {
-        resultMessage += `
-          <strong>Total for Pots:</strong><br>
-          ~${totalBags} bag(s) of 1.5 cubic feet potting mix
-        `;
-      }
-      
-      resultMessage += `</div>`;
       showResult(resultMessage);
     }
 
