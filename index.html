@@ -102,13 +102,81 @@
       }
 
       .radio-option input[type="radio"] {
-  width: 20px;
-  height: 20px;
-  accent-color: #ad2a24;
-  margin-right: 8px;
-  cursor: pointer;
-}
-
+        width: 20px;
+        height: 20px;
+        accent-color: #ad2a24;
+        margin-right: 8px;
+        cursor: pointer;
+      }
+      
+      .planter-entry {
+        position: relative;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+        border-radius: 5px;
+        background-color: #fafafa;
+      }
+      
+      .remove-planter {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ad2a24;
+        color: white;
+        border: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+      
+      .remove-planter:hover {
+        background: #9a221e;
+      }
+      
+      .add-planter-btn {
+        background-color: #4CAF50 !important;
+        margin-bottom: 20px;
+      }
+      
+      .add-planter-btn:hover {
+        background-color: #3e8e41 !important;
+      }
+      
+      .individual-result {
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f5f5f5;
+        border-radius: 4px;
+        border-left: 3px solid #ad2a24;
+      }
+      
+      .total-result {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        border-left: 4px solid #ad2a24;
+        font-weight: bold;
+      }
+      
+      .planter-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      
+      .planter-title {
+        font-weight: bold;
+        color: #ad2a24;
+      }
 
       @media (max-width: 600px) {
         .soil-calculator {
@@ -131,85 +199,155 @@
     // Create the calculator HTML structure
     const calculatorHTML = `
       <div class="soil-calculator">
-      
-        <label>Planter Style</label>
-        <div class="radio-group">
-          <div class="radio-option">
-            <input type="radio" id="raisedRadio" name="planterStyle" value="raised" checked><strong>Raised Bed</strong>
-             
-          </div>
-          <div class="radio-option">
-            <input type="radio" id="potRadio" name="planterStyle" value="pot"><strong>Pot</strong>
-            
-          </div>
+        <p>Add all your planters below, then click Calculate</p>
+        
+        <div id="planterContainer">
+          <!-- Planter entries will be added here -->
         </div>
-
-        <div id="raisedFields">
-          <label for="length">Length</label>
-          <input type="number" id="length" placeholder="Enter length">
-          
-          <label for="width">Width</label>
-          <input type="number" id="width" placeholder="Enter width">
-
-          <label for="unitRaised">Unit</label>
-          <select id="unitRaised">
-            <option value="feet">Feet</option>
-            <option value="yards">Yards</option>
-            <option value="meters">Meters</option>
-          </select>
-        </div>
-
-        <div id="potFields" class="hidden">
-          <label for="diameter">Diameter</label>
-          <input type="number" id="diameter" placeholder="Enter diameter">
-
-          <label for="unitPot">Unit</label>
-          <select id="unitPot">
-            <option value="inches">Inches</option>
-            <option value="cm">Centimeters</option>
-          </select>
-        </div>
-
-        <label for="depth">Depth (inches)</label>
-        <input type="number" id="depth" value="6">
-
+        
+        <button id="addPlanterBtn" class="add-planter-btn">+ Add Another Planter</button>
+        
         <button id="calculateBtn">Calculate</button>
         <button id="resetBtn">Reset</button>
 
         <div id="alert" class="alert hidden"></div>
         <div id="result" class="result hidden"></div>
       </div>
+      
+      <template id="planterTemplate">
+        <div class="planter-entry">
+          <button class="remove-planter" title="Remove this planter">×</button>
+          
+          <div class="planter-header">
+            <div class="planter-title">Planter #<span class="planter-number">1</span></div>
+          </div>
+          
+          <label>Planter Style</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" class="planter-style-radio" value="raised" checked><strong>Raised Bed</strong>
+            </div>
+            <div class="radio-option">
+              <input type="radio" class="planter-style-radio" value="pot"><strong>Pot</strong>
+            </div>
+          </div>
+
+          <div class="raised-fields">
+            <label for="length">Length</label>
+            <input type="number" class="length" placeholder="Enter length" min="0.1" step="0.1">
+            
+            <label for="width">Width</label>
+            <input type="number" class="width" placeholder="Enter width" min="0.1" step="0.1">
+
+            <label for="unitRaised">Unit</label>
+            <select class="unit-raised">
+              <option value="feet">Feet</option>
+              <option value="yards">Yards</option>
+              <option value="meters">Meters</option>
+            </select>
+          </div>
+
+          <div class="pot-fields hidden">
+            <label for="diameter">Diameter</label>
+            <input type="number" class="diameter" placeholder="Enter diameter" min="0.1" step="0.1">
+
+            <label for="unitPot">Unit</label>
+            <select class="unit-pot">
+              <option value="inches">Inches</option>
+              <option value="cm">Centimeters</option>
+            </select>
+          </div>
+
+          <label for="depth">Depth (inches)</label>
+          <input type="number" class="depth" value="6" min="1" step="0.5">
+        </div>
+      </template>
     `;
 
     // Add the calculator to the container
     calculatorContainer.innerHTML = calculatorHTML;
 
     // Calculator functionality
-    const raisedRadio = document.getElementById('raisedRadio');
-    const potRadio = document.getElementById('potRadio');
-    const raisedFields = document.getElementById('raisedFields');
-    const potFields = document.getElementById('potFields');
+    const planterContainer = document.getElementById('planterContainer');
+    const planterTemplate = document.getElementById('planterTemplate');
+    const addPlanterBtn = document.getElementById('addPlanterBtn');
     const resultDiv = document.getElementById('result');
     const alertDiv = document.getElementById('alert');
 
-    function handlePlanterStyleChange() {
-      if (raisedRadio.checked) {
-        raisedFields.classList.remove('hidden');
-        potFields.classList.add('hidden');
-      } else {
-        potFields.classList.remove('hidden');
-        raisedFields.classList.add('hidden');
-      }
-      clearOutput();
+    // Add first planter by default
+    addNewPlanter();
+
+    function updatePlanterNumbers() {
+      const planters = document.querySelectorAll('.planter-entry');
+      planters.forEach((planter, index) => {
+        planter.querySelector('.planter-number').textContent = index + 1;
+      });
     }
 
-    raisedRadio.addEventListener('change', handlePlanterStyleChange);
-    potRadio.addEventListener('change', handlePlanterStyleChange);
+    function addNewPlanter() {
+      const planterClone = planterTemplate.content.cloneNode(true);
+      const planterEntry = planterClone.querySelector('.planter-entry');
+      
+      // Get unique ID for this planter's radio buttons
+      const planterId = Date.now();
+      
+      // Set up radio buttons with unique names
+      const radioButtons = planterEntry.querySelectorAll('.planter-style-radio');
+      radioButtons.forEach(radio => {
+        radio.name = `planterStyle_${planterId}`;
+      });
+      
+      // Set up radio button toggles
+      const raisedRadio = planterEntry.querySelector('input[value="raised"]');
+      const potRadio = planterEntry.querySelector('input[value="pot"]');
+      const raisedFields = planterEntry.querySelector('.raised-fields');
+      const potFields = planterEntry.querySelector('.pot-fields');
+      
+      function handlePlanterStyleChange() {
+        if (raisedRadio.checked) {
+          raisedFields.classList.remove('hidden');
+          potFields.classList.add('hidden');
+        } else {
+          potFields.classList.remove('hidden');
+          raisedFields.classList.add('hidden');
+        }
+      }
+      
+      raisedRadio.addEventListener('change', handlePlanterStyleChange);
+      potRadio.addEventListener('change', handlePlanterStyleChange);
+      
+      // Initialize the correct fields based on default selection
+      handlePlanterStyleChange();
+      
+      // Set up remove button
+      const removeBtn = planterEntry.querySelector('.remove-planter');
+      removeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (document.querySelectorAll('.planter-entry').length > 1) {
+          planterEntry.remove();
+          updatePlanterNumbers();
+          calculate(); // Recalculate after removal
+        } else {
+          showAlert("You need at least one planter. Reset if you want to start over.");
+        }
+      });
+      
+      planterContainer.appendChild(planterClone);
+      updatePlanterNumbers();
+      
+      // Auto-calculate when adding new planters if there are existing results
+      if (!resultDiv.classList.contains('hidden')) {
+        calculate();
+      }
+    }
 
     function showAlert(message) {
       alertDiv.innerHTML = message;
       alertDiv.classList.remove('hidden');
       resultDiv.classList.add('hidden');
+      setTimeout(() => {
+        alertDiv.classList.add('hidden');
+      }, 5000);
     }
 
     function showResult(message) {
@@ -224,102 +362,182 @@
     }
 
     function resetForm() {
-      document.getElementById('length').value = '';
-      document.getElementById('width').value = '';
-      document.getElementById('diameter').value = '';
-      document.getElementById('depth').value = 6;
-      raisedRadio.checked = true;
-      potRadio.checked = false;
-      raisedFields.classList.remove('hidden');
-      potFields.classList.add('hidden');
+      planterContainer.innerHTML = '';
+      addNewPlanter();
       clearOutput();
     }
 
     function calculate() {
-      const depthInches = parseFloat(document.getElementById('depth').value);
-      if (isNaN(depthInches) || depthInches <= 0) {
-        showAlert("Please enter a valid depth in inches.");
-        return;
-      }
-
-      if (raisedRadio.checked) {
-        const l = parseFloat(document.getElementById('length').value);
-        const w = parseFloat(document.getElementById('width').value);
-        const unit = document.getElementById('unitRaised').value;
-
-        if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) {
-          showAlert("Please enter valid dimensions for the raised bed.");
+      let totalVolumeCubicFeet = 0;
+      let totalVolumeCubicYards = 0;
+      let totalVolumeCubicMeters = 0;
+      let totalVolumeLiters = 0;
+      let totalCompost = 0;
+      let totalTopsoil = 0;
+      let totalSand = 0;
+      let totalBags = 0;
+      
+      const planters = document.querySelectorAll('.planter-entry');
+      let hasErrors = false;
+      let individualResults = [];
+      
+      planters.forEach((planter, index) => {
+        const planterNumber = index + 1;
+        const depthInches = parseFloat(planter.querySelector('.depth').value);
+        if (isNaN(depthInches) || depthInches <= 0) {
+          showAlert(`Planter #${planterNumber}: Please enter a valid depth in inches.`);
+          hasErrors = true;
           return;
         }
-
-        // Convert to feet
-        let lengthFeet = l, widthFeet = w;
-        if (unit === 'meters') {
-          lengthFeet = l * 3.28084;
-          widthFeet = w * 3.28084;
-        } else if (unit === 'yards') {
-          lengthFeet = l * 3;
-          widthFeet = w * 3;
+        
+        let planterResult = `<div class="individual-result"><strong>Planter #${planterNumber} Results:</strong><br>`;
+        let planterType = '';
+        
+        // Get the selected radio button for this specific planter
+        const selectedStyle = planter.querySelector('.planter-style-radio:checked').value;
+        
+        if (selectedStyle === 'raised') {
+          planterType = 'Raised Bed';
+          // Raised bed calculation
+          const l = parseFloat(planter.querySelector('.length').value);
+          const w = parseFloat(planter.querySelector('.width').value);
+          const unit = planter.querySelector('.unit-raised').value;
+          
+          if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) {
+            showAlert(`Planter #${planterNumber}: Please enter valid dimensions for the raised bed.`);
+            hasErrors = true;
+            return;
+          }
+          
+          // Convert to feet
+          let lengthFeet = l, widthFeet = w;
+          if (unit === 'meters') {
+            lengthFeet = l * 3.28084;
+            widthFeet = w * 3.28084;
+          } else if (unit === 'yards') {
+            lengthFeet = l * 3;
+            widthFeet = w * 3;
+          }
+          
+          const depthFeet = depthInches / 12;
+          const volumeCubicFeet = lengthFeet * widthFeet * depthFeet;
+          const volumeCubicYards = volumeCubicFeet / 27;
+          const volumeCubicMeters = volumeCubicFeet * 0.0283168;
+          const volumeLiters = volumeCubicFeet * 28.3168;
+          const compost = (volumeCubicYards * 0.4).toFixed(2);
+          const topsoil = (volumeCubicYards * 0.4).toFixed(2);
+          const sand = (volumeCubicYards * 0.2).toFixed(2);
+          
+          totalVolumeCubicFeet += volumeCubicFeet;
+          totalCompost += parseFloat(compost);
+          totalTopsoil += parseFloat(topsoil);
+          totalSand += parseFloat(sand);
+          
+          planterResult += `
+            Type: ${planterType}<br>
+            Dimensions: ${l} × ${w} ${unit}, ${depthInches} inches deep<br>
+            Volume: ${volumeCubicYards.toFixed(2)} cubic yards / 
+                    ${volumeCubicFeet.toFixed(2)} cubic feet<br>
+            Requires: ${compost} cu yd compost, 
+                      ${topsoil} cu yd topsoil, 
+                      ${sand} cu yd sand
+          `;
+        } else {
+          planterType = 'Pot';
+          // Pot calculation
+          const d = parseFloat(planter.querySelector('.diameter').value);
+          const unit = planter.querySelector('.unit-pot').value;
+          
+          if (isNaN(d) || d <= 0) {
+            showAlert(`Planter #${planterNumber}: Please enter a valid diameter for the pot.`);
+            hasErrors = true;
+            return;
+          }
+          
+          let diameterInches = d;
+          if (unit === 'cm') diameterInches = d / 2.54;
+          
+          const radiusFeet = (diameterInches / 2) / 12;
+          const depthFeet = depthInches / 12;
+          
+          const volumeCubicFeet = Math.PI * Math.pow(radiusFeet, 2) * depthFeet;
+          const volumeCubicYards = volumeCubicFeet / 27;
+          const volumeCubicMeters = volumeCubicFeet * 0.0283168;
+          const volumeLiters = volumeCubicFeet * 28.3168;
+          const bagsNeeded = Math.ceil(volumeCubicFeet / 1.5);
+          
+          totalVolumeCubicFeet += volumeCubicFeet;
+          totalBags += bagsNeeded;
+          
+          planterResult += `
+            Type: ${planterType}<br>
+            Dimensions: ${d} ${unit} diameter, ${depthInches} inches deep<br>
+            Volume: ${volumeCubicYards.toFixed(2)} cubic yards / 
+                    ${volumeCubicFeet.toFixed(2)} cubic feet<br>
+            Requires: ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
+          `;
         }
-
-        const depthFeet = depthInches / 12;
-        const volumeCubicFeet = lengthFeet * widthFeet * depthFeet;
-        const volumeCubicYards = volumeCubicFeet / 27;
-        const volumeCubicMeters = volumeCubicFeet * 0.0283168;
-        const volumeLiters = volumeCubicFeet * 28.3168;
-
-        const compost = (volumeCubicYards * 0.4).toFixed(2);
-        const topsoil = (volumeCubicYards * 0.4).toFixed(2);
-        const sand = (volumeCubicYards * 0.2).toFixed(2);
-
-        showResult(`
-          <strong>Soil Volume Required:</strong><br>
-          ${volumeCubicYards.toFixed(2)} cubic yards<br>
-          ${volumeCubicFeet.toFixed(2)} cubic feet<br>
-          ${volumeCubicMeters.toFixed(2)} cubic meters<br>
-          ${volumeLiters.toFixed(2)} liters<br><br>
-          <strong>Here's what you need: </strong><br>
-          ${compost} cubic yard compost (40%)<br>
-          ${topsoil} cubic yard topsoil (40%)<br>
-          ${sand} cubic yard sand (20%)<br>
-        `);
-      } else {
-        const d = parseFloat(document.getElementById('diameter').value);
-        const unit = document.getElementById('unitPot').value;
-
-        if (isNaN(d) || d <= 0) {
-          showAlert("Please enter a valid diameter for the pot.");
-          return;
-        }
-
-        let diameterInches = d;
-        if (unit === 'cm') diameterInches = d / 2.54;
-
-        const radiusFeet = (diameterInches / 2) / 12;
-        const depthFeet = depthInches / 12;
-
-        const volumeCubicFeet = Math.PI * Math.pow(radiusFeet, 2) * depthFeet;
-        const volumeCubicYards = volumeCubicFeet / 27;
-        const volumeCubicMeters = volumeCubicFeet * 0.0283168;
-        const volumeLiters = volumeCubicFeet * 28.3168;
-
-        const bagsNeeded = Math.ceil(volumeCubicFeet / 1.5);
-
-        showResult(`
-          <strong>Soil Volume Required:</strong><br>
-          ${volumeCubicYards.toFixed(2)} cubic yards<br>
-          ${volumeCubicFeet.toFixed(2)} cubic feet<br>
-          ${volumeCubicMeters.toFixed(2)} cubic meters<br>
-          ${volumeLiters.toFixed(2)} liters<br><br>
-          <strong>Here's what you need:</strong><br>
-          ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
-        `);
+        
+        planterResult += `</div>`;
+        individualResults.push(planterResult);
+      });
+      
+      if (hasErrors) return;
+      
+      // Calculate totals
+      totalVolumeCubicYards = totalVolumeCubicFeet / 27;
+      totalVolumeCubicMeters = totalVolumeCubicFeet * 0.0283168;
+      totalVolumeLiters = totalVolumeCubicFeet * 28.3168;
+      
+      // Prepare result message
+      let resultMessage = `
+        <h3>Individual Planter Results</h3>
+        ${individualResults.join('')}
+        
+        <div class="total-result">
+          <h3>Total Requirements</h3>
+          <strong>Total Soil Volume:</strong><br>
+          ${totalVolumeCubicYards.toFixed(2)} cubic yards<br>
+          ${totalVolumeCubicFeet.toFixed(2)} cubic feet<br>
+          ${totalVolumeCubicMeters.toFixed(2)} cubic meters<br>
+          ${totalVolumeLiters.toFixed(2)} liters<br><br>
+      `;
+      
+      if (totalCompost > 0) {
+        resultMessage += `
+          <strong>Total for Raised Beds:</strong><br>
+          ${totalCompost.toFixed(2)} cubic yards compost (40%)<br>
+          ${totalTopsoil.toFixed(2)} cubic yards topsoil (40%)<br>
+          ${totalSand.toFixed(2)} cubic yards sand (20%)<br><br>
+        `;
       }
+      
+      if (totalBags > 0) {
+        resultMessage += `
+          <strong>Total for Pots:</strong><br>
+          ~${totalBags} bag(s) of 1.5 cubic feet potting mix
+        `;
+      }
+      
+      resultMessage += `</div>`;
+      showResult(resultMessage);
     }
 
     // Add event listeners to buttons
-    document.getElementById('calculateBtn').addEventListener('click', calculate);
-    document.getElementById('resetBtn').addEventListener('click', resetForm);
+    addPlanterBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      addNewPlanter();
+    });
+    
+    document.getElementById('calculateBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      calculate();
+    });
+    
+    document.getElementById('resetBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      resetForm();
+    });
   </script>
 </body>
 </html>
