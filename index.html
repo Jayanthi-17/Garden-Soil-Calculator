@@ -119,31 +119,30 @@
       }
       
       .remove-planter {
-  position: absolute;
-  top: 8px;
-  right:8px;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  font-size: 16px;
-  line-height: 1;
-  background-color: #e3342f;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-  transition: background-color 0.2s ease;
-}
+        position: absolute;
+        top: 8px;
+        right:8px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        font-size: 16px;
+        line-height: 1;
+        background-color: #e3342f;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        transition: background-color 0.2s ease;
+      }
 
-.remove-planter:hover {
-  background-color: #cc1f1a;
-}
-
+      .remove-planter:hover {
+        background-color: #cc1f1a;
+      }
       
       .add-planter-btn {
         background-color: #4CAF50 !important;
@@ -204,7 +203,7 @@
     // Create the calculator HTML structure
     const calculatorHTML = `
       <div class="soil-calculator">
-        
+        <h2>Soil Calculator</h2>
         <p>Add all your planters below, then click Calculate</p>
         
         <div id="planterContainer">
@@ -374,14 +373,13 @@
     }
 
     function calculate() {
-      let totalVolumeCubicFeet = 0;
-      let totalVolumeCubicYards = 0;
-      let totalVolumeCubicMeters = 0;
-      let totalVolumeLiters = 0;
+      let totalVolume = 0;
       let totalCompost = 0;
       let totalTopsoil = 0;
       let totalSand = 0;
       let totalBags = 0;
+      let selectedUnit = 'feet'; // Default unit
+      let displayUnit = 'cubic feet'; // Default display unit
       
       const planters = document.querySelectorAll('.planter-entry');
       let hasErrors = false;
@@ -390,6 +388,7 @@
       planters.forEach((planter, index) => {
         const planterNumber = index + 1;
         const depthInches = parseFloat(planter.querySelector('.depth').value);
+        
         if (isNaN(depthInches) || depthInches <= 0) {
           showAlert(`Planter #${planterNumber}: Please enter a valid depth in inches.`);
           hasErrors = true;
@@ -399,15 +398,13 @@
         let planterResult = `<div class="individual-result"><strong>Planter #${planterNumber} Results:</strong><br>`;
         let planterType = '';
         
-        // Get the selected radio button for this specific planter
         const selectedStyle = planter.querySelector('.planter-style-radio:checked').value;
         
         if (selectedStyle === 'raised') {
           planterType = 'Raised Bed';
-          // Raised bed calculation
           const l = parseFloat(planter.querySelector('.length').value);
           const w = parseFloat(planter.querySelector('.width').value);
-          const unit = planter.querySelector('.unit-raised').value;
+          selectedUnit = planter.querySelector('.unit-raised').value;
           
           if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) {
             showAlert(`Planter #${planterNumber}: Please enter valid dimensions for the raised bed.`);
@@ -415,44 +412,58 @@
             return;
           }
           
-          // Convert to feet
+          // Calculate in cubic feet first (our base unit)
           let lengthFeet = l, widthFeet = w;
-          if (unit === 'meters') {
+          if (selectedUnit === 'meters') {
             lengthFeet = l * 3.28084;
             widthFeet = w * 3.28084;
-          } else if (unit === 'yards') {
+            displayUnit = 'cubic meters';
+          } else if (selectedUnit === 'yards') {
             lengthFeet = l * 3;
             widthFeet = w * 3;
+            displayUnit = 'cubic yards';
+          } else {
+            displayUnit = 'cubic feet';
           }
           
           const depthFeet = depthInches / 12;
           const volumeCubicFeet = lengthFeet * widthFeet * depthFeet;
-          const volumeCubicYards = volumeCubicFeet / 27;
-          const volumeCubicMeters = volumeCubicFeet * 0.0283168;
-          const volumeLiters = volumeCubicFeet * 28.3168;
-          const compost = (volumeCubicYards * 0.4).toFixed(2);
-          const topsoil = (volumeCubicYards * 0.4).toFixed(2);
-          const sand = (volumeCubicYards * 0.2).toFixed(2);
           
-          totalVolumeCubicFeet += volumeCubicFeet;
+          // Convert to selected unit for display
+          let displayVolume;
+          switch(selectedUnit) {
+            case 'meters':
+              displayVolume = volumeCubicFeet * 0.0283168; // to m³
+              break;
+            case 'yards':
+              displayVolume = volumeCubicFeet / 27; // to yd³
+              break;
+            default: // feet
+              displayVolume = volumeCubicFeet;
+          }
+          
+          // Calculate components in the same unit
+          const compost = (displayVolume * 0.4).toFixed(2);
+          const topsoil = (displayVolume * 0.4).toFixed(2);
+          const sand = (displayVolume * 0.2).toFixed(2);
+          
+          totalVolume += displayVolume;
           totalCompost += parseFloat(compost);
           totalTopsoil += parseFloat(topsoil);
           totalSand += parseFloat(sand);
           
           planterResult += `
             Type: ${planterType}<br>
-            Dimensions: ${l} × ${w} ${unit}, ${depthInches} inches deep<br>
-            Volume: ${volumeCubicYards.toFixed(2)} cubic yards / 
-                    ${volumeCubicFeet.toFixed(2)} cubic feet<br>
-            Requires: ${compost} cu yd compost, 
-                      ${topsoil} cu yd topsoil, 
-                      ${sand} cu yd sand
+            Dimensions: ${l} × ${w} ${selectedUnit}, ${depthInches} inches deep<br>
+            Volume: ${displayVolume.toFixed(2)} ${displayUnit}<br>
+            Requires: ${compost} ${displayUnit} compost (40%), 
+                      ${topsoil} ${displayUnit} topsoil (40%), 
+                      ${sand} ${displayUnit} sand (20%)
           `;
         } else {
           planterType = 'Pot';
-          // Pot calculation
           const d = parseFloat(planter.querySelector('.diameter').value);
-          const unit = planter.querySelector('.unit-pot').value;
+          const potUnit = planter.querySelector('.unit-pot').value;
           
           if (isNaN(d) || d <= 0) {
             showAlert(`Planter #${planterNumber}: Please enter a valid diameter for the pot.`);
@@ -460,26 +471,23 @@
             return;
           }
           
+          // Pot calculations will still use bags (special case)
           let diameterInches = d;
-          if (unit === 'cm') diameterInches = d / 2.54;
+          if (potUnit === 'cm') diameterInches = d / 2.54;
           
           const radiusFeet = (diameterInches / 2) / 12;
           const depthFeet = depthInches / 12;
           
           const volumeCubicFeet = Math.PI * Math.pow(radiusFeet, 2) * depthFeet;
-          const volumeCubicYards = volumeCubicFeet / 27;
-          const volumeCubicMeters = volumeCubicFeet * 0.0283168;
-          const volumeLiters = volumeCubicFeet * 28.3168;
           const bagsNeeded = Math.ceil(volumeCubicFeet / 1.5);
           
-          totalVolumeCubicFeet += volumeCubicFeet;
+          totalVolume += volumeCubicFeet;
           totalBags += bagsNeeded;
           
           planterResult += `
             Type: ${planterType}<br>
-            Dimensions: ${d} ${unit} diameter, ${depthInches} inches deep<br>
-            Volume: ${volumeCubicYards.toFixed(2)} cubic yards / 
-                    ${volumeCubicFeet.toFixed(2)} cubic feet<br>
+            Dimensions: ${d} ${potUnit} diameter, ${depthInches} inches deep<br>
+            Volume: ${volumeCubicFeet.toFixed(2)} cubic feet<br>
             Requires: ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
           `;
         }
@@ -490,31 +498,23 @@
       
       if (hasErrors) return;
       
-      // Calculate totals
-      totalVolumeCubicYards = totalVolumeCubicFeet / 27;
-      totalVolumeCubicMeters = totalVolumeCubicFeet * 0.0283168;
-      totalVolumeLiters = totalVolumeCubicFeet * 28.3168;
-      
-      // Prepare result message
+      // Prepare result message with consistent units
       let resultMessage = `
         <h3>Individual Planter Results</h3>
         ${individualResults.join('')}
         
         <div class="total-result">
           <h3>Total Requirements</h3>
-          <strong>Total Soil Volume:</strong><br>
-          ${totalVolumeCubicYards.toFixed(2)} cubic yards<br>
-          ${totalVolumeCubicFeet.toFixed(2)} cubic feet<br>
-          ${totalVolumeCubicMeters.toFixed(2)} cubic meters<br>
-          ${totalVolumeLiters.toFixed(2)} liters<br><br>
       `;
       
       if (totalCompost > 0) {
+        // For raised beds - use the selected unit
         resultMessage += `
           <strong>Total for Raised Beds:</strong><br>
-          ${totalCompost.toFixed(2)} cubic yards compost (40%)<br>
-          ${totalTopsoil.toFixed(2)} cubic yards topsoil (40%)<br>
-          ${totalSand.toFixed(2)} cubic yards sand (20%)<br><br>
+          ${totalVolume.toFixed(2)} ${displayUnit} total soil<br>
+          ${totalCompost.toFixed(2)} ${displayUnit} compost (40%)<br>
+          ${totalTopsoil.toFixed(2)} ${displayUnit} topsoil (40%)<br>
+          ${totalSand.toFixed(2)} ${displayUnit} sand (20%)<br><br>
         `;
       }
       
