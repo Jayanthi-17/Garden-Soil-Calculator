@@ -72,7 +72,12 @@
         font-weight: 600;
         transition: background-color 0.3s;
       }
-
+#calculateBtn{
+ background-color:#228B22;
+}
+ #calculateBtn:hover{
+ background-color:#006400;
+ }
       .soil-calculator button:hover {
         background-color: #9a221e;
       }
@@ -145,12 +150,12 @@
       }
       
       .add-planter-btn {
-        background-color: #4CAF50 !important;
+        background-color: #808080 !important;
         margin-bottom: 20px;
       }
       
       .add-planter-btn:hover {
-        background-color: #3e8e41 !important;
+        background-color: #000000 !important;
       }
       
       .individual-result {
@@ -203,17 +208,16 @@
     // Create the calculator HTML structure
     const calculatorHTML = `
       <div class="soil-calculator">
-        <h2>Soil Calculator</h2>
         <p>Add all your planters below, then click Calculate</p>
         
         <div id="planterContainer">
           <!-- Planter entries will be added here -->
         </div>
-        
-        <button id="addPlanterBtn" class="add-planter-btn">+ Add Another Planter</button>
+
         
         <button id="calculateBtn">Calculate</button>
         <button id="resetBtn">Reset</button>
+        <button id="addPlanterBtn" class="add-planter-btn">+ Add Another Planter/Pot</button>
 
         <div id="alert" class="alert hidden"></div>
         <div id="result" class="result hidden"></div>
