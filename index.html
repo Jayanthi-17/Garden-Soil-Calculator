@@ -72,12 +72,12 @@
         font-weight: 600;
         transition: background-color 0.3s;
       }
-#calculateBtn{
- background-color:#228B22;
-}
- #calculateBtn:hover{
- background-color:#006400;
- }
+      #calculateBtn{
+       background-color:#228B22;
+      }
+       #calculateBtn:hover{
+       background-color:#006400;
+       }
       .soil-calculator button:hover {
         background-color: #9a221e;
       }
@@ -186,6 +186,16 @@
         font-weight: bold;
         color: #ad2a24;
       }
+      
+      .bag-info {
+        margin-left: 15px;
+        font-size: 0.9em;
+        color: #555;
+      }
+      
+      .material-row {
+        margin-bottom: 8px;
+      }
 
       @media (max-width: 600px) {
         .soil-calculator {
@@ -208,13 +218,13 @@
     // Create the calculator HTML structure
     const calculatorHTML = `
       <div class="soil-calculator">
+        <h2>Garden Soil Calculator</h2>
         <p>Add all your planters below, then click Calculate</p>
         
         <div id="planterContainer">
           <!-- Planter entries will be added here -->
         </div>
 
-        
         <button id="calculateBtn">Calculate</button>
         <button id="resetBtn">Reset</button>
         <button id="addPlanterBtn" class="add-planter-btn">+ Add Another Planter/Pot</button>
@@ -377,11 +387,22 @@
     }
 
     function calculate() {
+      // Bag size constants
+      const BAG_SIZES = {
+        topsoil: 0.75,    // 0.75 cu ft (40 lb) bags
+        compost: 1,       // 1 cu ft bags
+        sand: 0.5,        // 0.5 cu ft (50 lb) bags
+        pottingMix: 1.5   // 1.5 cu ft bags
+      };
+      
       let totalVolume = 0;
       let totalCompost = 0;
       let totalTopsoil = 0;
       let totalSand = 0;
       let totalBags = 0;
+      let totalCompostBags = 0;
+      let totalTopsoilBags = 0;
+      let totalSandBags = 0;
       let selectedUnit = 'feet'; // Default unit
       let displayUnit = 'cubic feet'; // Default display unit
       
@@ -393,8 +414,14 @@
         const planterNumber = index + 1;
         const depthInches = parseFloat(planter.querySelector('.depth').value);
         
-        if (isNaN(depthInches) || depthInches <= 0) {
-          showAlert(`Planter #${planterNumber}: Please enter a valid depth in inches.`);
+        if (isNaN(depthInches)) {
+          showAlert(`Planter #${planterNumber}: Please enter a depth.`);
+          hasErrors = true;
+          return;
+        }
+        
+        if (depthInches <= 0) {
+          showAlert(`Planter #${planterNumber}: Depth must be greater than zero.`);
           hasErrors = true;
           return;
         }
@@ -410,8 +437,14 @@
           const w = parseFloat(planter.querySelector('.width').value);
           selectedUnit = planter.querySelector('.unit-raised').value;
           
-          if (isNaN(l) || isNaN(w) || l <= 0 || w <= 0) {
-            showAlert(`Planter #${planterNumber}: Please enter valid dimensions for the raised bed.`);
+          if (isNaN(l) || isNaN(w)) {
+            showAlert(`Planter #${planterNumber}: Please enter dimensions for the raised bed.`);
+            hasErrors = true;
+            return;
+          }
+          
+          if (l <= 0 || w <= 0) {
+            showAlert(`Planter #${planterNumber}: Dimensions must be greater than zero.`);
             hasErrors = true;
             return;
           }
@@ -447,30 +480,55 @@
           }
           
           // Calculate components in the same unit
-          const compost = (displayVolume * 0.4).toFixed(2);
-          const topsoil = (displayVolume * 0.4).toFixed(2);
-          const sand = (displayVolume * 0.2).toFixed(2);
+          const compost = (displayVolume * 0.4);
+          const topsoil = (displayVolume * 0.4);
+          const sand = (displayVolume * 0.2);
+          
+          // Calculate bags needed (rounded up)
+          const compostBags = Math.ceil(compost / BAG_SIZES.compost);
+          const topsoilBags = Math.ceil(topsoil / BAG_SIZES.topsoil);
+          const sandBags = Math.ceil(sand / BAG_SIZES.sand);
           
           totalVolume += displayVolume;
-          totalCompost += parseFloat(compost);
-          totalTopsoil += parseFloat(topsoil);
-          totalSand += parseFloat(sand);
+          totalCompost += compost;
+          totalTopsoil += topsoil;
+          totalSand += sand;
+          totalCompostBags += compostBags;
+          totalTopsoilBags += topsoilBags;
+          totalSandBags += sandBags;
           
           planterResult += `
-            Type: ${planterType}<br>
-            Dimensions: ${l} × ${w} ${selectedUnit}, ${depthInches} inches deep<br>
-            Volume: ${displayVolume.toFixed(2)} ${displayUnit}<br>
-            Requires: ${compost} ${displayUnit} compost (40%), 
-                      ${topsoil} ${displayUnit} topsoil (40%), 
-                      ${sand} ${displayUnit} sand (20%)
+            <div class="material-row">
+              <strong>Type:</strong> ${planterType}<br>
+              <strong>Dimensions:</strong> ${l} × ${w} ${selectedUnit}, ${depthInches} inches deep<br>
+              <strong>Total Volume:</strong> ${displayVolume.toFixed(2)} ${displayUnit}
+            </div>
+            <div class="material-row">
+              <strong>Compost:</strong> ${compost.toFixed(2)} ${displayUnit} 
+              <span class="bag-info">(~${compostBags} x 1 cu ft bags)</span>
+            </div>
+            <div class="material-row">
+              <strong>Topsoil:</strong> ${topsoil.toFixed(2)} ${displayUnit} 
+              <span class="bag-info">(~${topsoilBags} x 0.75 cu ft bags)</span>
+            </div>
+            <div class="material-row">
+              <strong>Sand:</strong> ${sand.toFixed(2)} ${displayUnit} 
+              <span class="bag-info">(~${sandBags} x 0.5 cu ft bags)</span>
+            </div>
           `;
         } else {
           planterType = 'Pot';
           const d = parseFloat(planter.querySelector('.diameter').value);
           const potUnit = planter.querySelector('.unit-pot').value;
           
-          if (isNaN(d) || d <= 0) {
-            showAlert(`Planter #${planterNumber}: Please enter a valid diameter for the pot.`);
+          if (isNaN(d)) {
+            showAlert(`Planter #${planterNumber}: Please enter a diameter for the pot.`);
+            hasErrors = true;
+            return;
+          }
+          
+          if (d <= 0) {
+            showAlert(`Planter #${planterNumber}: Diameter must be greater than zero.`);
             hasErrors = true;
             return;
           }
@@ -483,16 +541,18 @@
           const depthFeet = depthInches / 12;
           
           const volumeCubicFeet = Math.PI * Math.pow(radiusFeet, 2) * depthFeet;
-          const bagsNeeded = Math.ceil(volumeCubicFeet / 1.5);
+          const bagsNeeded = Math.ceil(volumeCubicFeet / BAG_SIZES.pottingMix);
           
           totalVolume += volumeCubicFeet;
           totalBags += bagsNeeded;
           
           planterResult += `
-            Type: ${planterType}<br>
-            Dimensions: ${d} ${potUnit} diameter, ${depthInches} inches deep<br>
-            Volume: ${volumeCubicFeet.toFixed(2)} cubic feet<br>
-            Requires: ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
+            <div class="material-row">
+              <strong>Type:</strong> ${planterType}<br>
+              <strong>Dimensions:</strong> ${d} ${potUnit} diameter, ${depthInches} inches deep<br>
+              <strong>Total Volume:</strong> ${volumeCubicFeet.toFixed(2)} cubic feet<br>
+              <strong>Potting Mix Needed:</strong> ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
+            </div>
           `;
         }
         
@@ -526,18 +586,29 @@
         if (totalCompost > 0) {
           // For raised beds - use the selected unit
           resultMessage += `
-            <strong>Total for Raised Beds:</strong><br>
-            ${totalVolume.toFixed(2)} ${displayUnit} total soil<br>
-            ${totalCompost.toFixed(2)} ${displayUnit} compost (40%)<br>
-            ${totalTopsoil.toFixed(2)} ${displayUnit} topsoil (40%)<br>
-            ${totalSand.toFixed(2)} ${displayUnit} sand (20%)<br><br>
+            <div class="material-row">
+              <strong>Total Volume for Raised Beds:</strong> ${totalVolume.toFixed(2)} ${displayUnit}
+            </div>
+            <div class="material-row">
+              <strong>Total Compost:</strong> ${totalCompost.toFixed(2)} ${displayUnit} 
+              <span class="bag-info">(~${totalCompostBags} x 1 cu ft bags)</span>
+            </div>
+            <div class="material-row">
+              <strong>Total Topsoil:</strong> ${totalTopsoil.toFixed(2)} ${displayUnit} 
+              <span class="bag-info">(~${totalTopsoilBags} x 0.75 cu ft bags)</span>
+            </div>
+            <div class="material-row">
+              <strong>Total Sand:</strong> ${totalSand.toFixed(2)} ${displayUnit} 
+              <span class="bag-info">(~${totalSandBags} x 0.5 cu ft bags)</span>
+            </div>
           `;
         }
         
         if (totalBags > 0) {
           resultMessage += `
-            <strong>Total for Pots:</strong><br>
-            ~${totalBags} bag(s) of 1.5 cubic feet potting mix
+            <div class="material-row">
+              <strong>Total Potting Mix for Pots:</strong> ~${totalBags} bag(s) of 1.5 cubic feet potting mix
+            </div>
           `;
         }
         
