@@ -196,6 +196,22 @@
       .material-row {
         margin-bottom: 8px;
       }
+      
+      .bags-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+      }
+      
+      .bags-table th, .bags-table td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .bags-table th {
+        background-color: #f2f2f2;
+      }
 
       @media (max-width: 600px) {
         .soil-calculator {
@@ -218,6 +234,7 @@
     // Create the calculator HTML structure
     const calculatorHTML = `
       <div class="soil-calculator">
+        
         <p>Add all your planters below, then click Calculate</p>
         
         <div id="planterContainer">
@@ -386,12 +403,28 @@
     }
 
     function calculate() {
-      // Bag size constants
-      const BAG_SIZES = {
-        topsoil: 0.75,    // 0.75 cu ft (40 lb) bags
-        compost: 1,       // 1 cu ft bags
-        sand: 0.5,        // 0.5 cu ft (50 lb) bags
-        pottingMix: 1.5   // 1.5 cu ft bags
+      // Bag size constants with descriptions
+      const BAG_INFO = {
+        topsoil: {
+          size: 0.75,
+          description: "0.75 cu ft (40 lb) bags",
+          label: "Topsoil"
+        },
+        compost: {
+          size: 1,
+          description: "1 cu ft bags",
+          label: "Compost"
+        },
+        sand: {
+          size: 0.5,
+          description: "0.5 cu ft (50 lb) bags",
+          label: "Sand"
+        },
+        pottingMix: {
+          size: 1.5,
+          description: "1.5 cu ft potting mix bags",
+          label: "Potting Mix"
+        }
       };
       
       let totalVolume = 0;
@@ -425,7 +458,7 @@
           return;
         }
         
-        let planterResult = `<div class="individual-result"><strong>Planter #${planterNumber} Results:</strong><br>`;
+        let planterResult = `<div class="individual-result"><strong> #${planterNumber} Results:</strong><br>`;
         let planterType = '';
         
         const selectedStyle = planter.querySelector('.planter-style-radio:checked').value;
@@ -484,9 +517,9 @@
           const sand = (displayVolume * 0.2);
           
           // Calculate bags needed (rounded up)
-          const compostBags = Math.ceil(compost / BAG_SIZES.compost);
-          const topsoilBags = Math.ceil(topsoil / BAG_SIZES.topsoil);
-          const sandBags = Math.ceil(sand / BAG_SIZES.sand);
+          const compostBags = Math.ceil(compost / BAG_INFO.compost.size);
+          const topsoilBags = Math.ceil(topsoil / BAG_INFO.topsoil.size);
+          const sandBags = Math.ceil(sand / BAG_INFO.sand.size);
           
           totalVolume += displayVolume;
           totalCompost += compost;
@@ -502,18 +535,32 @@
               <strong>Dimensions:</strong> ${l} × ${w} ${selectedUnit}, ${depthInches} inches deep<br>
               <strong>Total Volume:</strong> ${displayVolume.toFixed(2)} ${displayUnit}
             </div>
-            <div class="material-row">
-              <strong>Compost:</strong> ${compost.toFixed(2)} ${displayUnit} 
-              <span class="bag-info">(~${compostBags} x 1 cu ft bags)</span>
-            </div>
-            <div class="material-row">
-              <strong>Topsoil:</strong> ${topsoil.toFixed(2)} ${displayUnit} 
-              <span class="bag-info">(~${topsoilBags} x 0.75 cu ft bags)</span>
-            </div>
-            <div class="material-row">
-              <strong>Sand:</strong> ${sand.toFixed(2)} ${displayUnit} 
-              <span class="bag-info">(~${sandBags} x 0.5 cu ft bags)</span>
-            </div>
+            <table class="bags-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Bag Size</th>
+                  <th>Bags Needed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Compost</td>
+                  <td>${BAG_INFO.compost.description}</td>
+                  <td>~${compostBags} bags</td>
+                </tr>
+                <tr>
+                  <td>Topsoil</td>
+                  <td>${BAG_INFO.topsoil.description}</td>
+                  <td>~${topsoilBags} bags</td>
+                </tr>
+                <tr>
+                  <td>Sand</td>
+                  <td>${BAG_INFO.sand.description}</td>
+                  <td>~${sandBags} bags</td>
+                </tr>
+              </tbody>
+            </table>
           `;
         } else {
           planterType = 'Pot';
@@ -540,7 +587,7 @@
           const depthFeet = depthInches / 12;
           
           const volumeCubicFeet = Math.PI * Math.pow(radiusFeet, 2) * depthFeet;
-          const bagsNeeded = Math.ceil(volumeCubicFeet / BAG_SIZES.pottingMix);
+          const bagsNeeded = Math.ceil(volumeCubicFeet / BAG_INFO.pottingMix.size);
           
           totalVolume += volumeCubicFeet;
           totalBags += bagsNeeded;
@@ -550,7 +597,22 @@
               <strong>Type:</strong> ${planterType}<br>
               <strong>Dimensions:</strong> ${d} ${potUnit} diameter, ${depthInches} inches deep<br>
               <strong>Total Volume:</strong> ${volumeCubicFeet.toFixed(2)} cubic feet<br>
-              <strong>Potting Mix Needed:</strong> ~${bagsNeeded} bag(s) of 1.5 cubic feet potting mix
+              <table class="bags-table">
+                <thead>
+                  <tr>
+                    <th>Material</th>
+                    <th>Bag Size</th>
+                    <th>Bags Needed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Potting Mix</td>
+                    <td>${BAG_INFO.pottingMix.description}</td>
+                    <td>~${bagsNeeded} bags</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           `;
         }
@@ -583,31 +645,57 @@
         `;
         
         if (totalCompost > 0) {
-          // For raised beds - use the selected unit
           resultMessage += `
             <div class="material-row">
               <strong>Total Volume for Raised Beds:</strong> ${totalVolume.toFixed(2)} ${displayUnit}
             </div>
-            <div class="material-row">
-              <strong>Total Compost:</strong> ${totalCompost.toFixed(2)} ${displayUnit} 
-              <span class="bag-info">(~${totalCompostBags} x 1 cu ft bags)</span>
-            </div>
-            <div class="material-row">
-              <strong>Total Topsoil:</strong> ${totalTopsoil.toFixed(2)} ${displayUnit} 
-              <span class="bag-info">(~${totalTopsoilBags} x 0.75 cu ft bags)</span>
-            </div>
-            <div class="material-row">
-              <strong>Total Sand:</strong> ${totalSand.toFixed(2)} ${displayUnit} 
-              <span class="bag-info">(~${totalSandBags} x 0.5 cu ft bags)</span>
-            </div>
+            <table class="bags-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Bag Size</th>
+                  <th>Total Bags Needed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Compost</td>
+                  <td>${BAG_INFO.compost.description}</td>
+                  <td>~${totalCompostBags} bags</td>
+                </tr>
+                <tr>
+                  <td>Topsoil</td>
+                  <td>${BAG_INFO.topsoil.description}</td>
+                  <td>~${totalTopsoilBags} bags</td>
+                </tr>
+                <tr>
+                  <td>Sand</td>
+                  <td>${BAG_INFO.sand.description}</td>
+                  <td>~${totalSandBags} bags</td>
+                </tr>
+              </tbody>
+            </table>
           `;
         }
         
         if (totalBags > 0) {
           resultMessage += `
-            <div class="material-row">
-              <strong>Total Potting Mix for Pots:</strong> ~${totalBags} bag(s) of 1.5 cubic feet potting mix
-            </div>
+            <table class="bags-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Bag Size</th>
+                  <th>Total Bags Needed</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Potting Mix</td>
+                  <td>${BAG_INFO.pottingMix.description}</td>
+                  <td>~${totalBags} bags</td>
+                </tr>
+              </tbody>
+            </table>
           `;
         }
         
