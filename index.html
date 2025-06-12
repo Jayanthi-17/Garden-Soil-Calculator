@@ -243,7 +243,7 @@
 
         <button id="calculateBtn">Calculate</button>
         <button id="resetBtn">Reset</button>
-        <button id="addPlanterBtn" class="add-planter-btn">+ Add Another Planter/Pot</button>
+        <button id="addPlanterBtn" class="add-planter-btn">+ Add Another Raised Bed/Pot</button>
 
         <div id="alert" class="alert hidden"></div>
         <div id="result" class="result hidden"></div>
@@ -254,10 +254,10 @@
           <button class="remove-planter" title="Remove this planter">×</button>
           
           <div class="planter-header">
-            <div class="planter-title">Planter #<span class="planter-number">1</span></div>
+            <div class="planter-title"><span class="planter-number"></span></div>
           </div>
           
-          <label>Planter Style</label>
+          <label></label>
           <div class="radio-group">
             <div class="radio-option">
               <input type="radio" class="planter-style-radio" value="raised" checked><strong>Raised Bed</strong>
@@ -447,13 +447,13 @@
         const depthInches = parseFloat(planter.querySelector('.depth').value);
         
         if (isNaN(depthInches)) {
-          showAlert(`Planter #${planterNumber}: Please enter a depth.`);
+          showAlert(` #${planterNumber}: Please enter a depth.`);
           hasErrors = true;
           return;
         }
         
         if (depthInches <= 0) {
-          showAlert(`Planter #${planterNumber}: Depth must be greater than zero.`);
+          showAlert(` #${planterNumber}: Depth must be greater than zero.`);
           hasErrors = true;
           return;
         }
@@ -470,13 +470,13 @@
           selectedUnit = planter.querySelector('.unit-raised').value;
           
           if (isNaN(l) || isNaN(w)) {
-            showAlert(`Planter #${planterNumber}: Please enter dimensions for the raised bed.`);
+            showAlert(` #${planterNumber}: Please enter dimensions for the raised bed.`);
             hasErrors = true;
             return;
           }
           
           if (l <= 0 || w <= 0) {
-            showAlert(`Planter #${planterNumber}: Dimensions must be greater than zero.`);
+            showAlert(` #${planterNumber}: Dimensions must be greater than zero.`);
             hasErrors = true;
             return;
           }
@@ -568,13 +568,13 @@
           const potUnit = planter.querySelector('.unit-pot').value;
           
           if (isNaN(d)) {
-            showAlert(`Planter #${planterNumber}: Please enter a diameter for the pot.`);
+            showAlert(` #${planterNumber}: Please enter a diameter for the pot.`);
             hasErrors = true;
             return;
           }
           
           if (d <= 0) {
-            showAlert(`Planter #${planterNumber}: Diameter must be greater than zero.`);
+            showAlert(` #${planterNumber}: Diameter must be greater than zero.`);
             hasErrors = true;
             return;
           }
